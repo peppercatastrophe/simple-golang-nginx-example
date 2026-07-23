@@ -14,6 +14,7 @@ services:
   main-service:
     build:
       context: ./main-service
+      target: runtime
     container_name: main-service
     expose:
       - "8081"
@@ -22,6 +23,7 @@ services:
   items-service:
     build:
       context: ./items-service
+      target: runtime
     container_name: items-service
     expose:
       - "8082"
