@@ -1,0 +1,28 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - main-service
+      - items-service
+    restart: unless-stopped
+
+  main-service:
+    build:
+      context: ./main-service
+    container_name: main-service
+    expose:
+      - "8081"
+    restart: unless-stopped
+
+  items-service:
+    build:
+      context: ./items-service
+    container_name: items-service
+    expose:
+      - "8082"
+    restart: unless-stopped
