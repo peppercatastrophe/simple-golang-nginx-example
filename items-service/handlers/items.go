@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
-// placeholder items slice
 type Item struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
@@ -20,22 +20,84 @@ var items = []Item{
 }
 
 func GetItems(c echo.Context) error {
-	return c.JSON(200, items)
+	token := extractToken(c)
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, echo.Map{"message": "missing authorization header"})
+	}
 
+	me, err := fetchMe(token)
+	if err != nil {
+		return authError(c, err)
+	}
+
+	users, err := fetchUsers(token)
+	if err != nil {
+		return authError(c, err)
+	}
+	ownerMap := buildOwnerMap(users)
+
+	itemResponses := make([]ItemResponse, 0, len(items))
+	for _, item := range items {
+		itemResponses = append(itemResponses, ItemResponse{
+			ID:      item.ID,
+			Name:    item.Name,
+			Price:   item.Price,
+			OwnerID: item.OwnerID,
+			Owner:   lookupOwner(ownerMap, item.OwnerID),
+		})
+	}
+
+	return c.JSON(200, ItemsResponse{
+		RequestedBy: *me,
+		Items:       itemResponses,
+	})
 }
 
 func GetItemById(c echo.Context) error {
+	token := extractToken(c)
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, echo.Map{"message": "missing authorization header"})
+	}
+
 	id := c.Param("id")
+	var found *Item
 	for _, item := range items {
 		if item.ID == id {
-			return c.JSON(200, item)
+			found = &item
+			break
 		}
 	}
-	return c.JSON(404, echo.Map{"message": "item not found"})
+	if found == nil {
+		return c.JSON(404, echo.Map{"message": "item not found"})
+	}
+
+	users, err := fetchUsers(token)
+	if err != nil {
+		return authError(c, err)
+	}
+	ownerMap := buildOwnerMap(users)
+
+	return c.JSON(200, ItemResponse{
+		ID:      found.ID,
+		Name:    found.Name,
+		Price:   found.Price,
+		OwnerID: found.OwnerID,
+		Owner:   lookupOwner(ownerMap, found.OwnerID),
+	})
 }
 
 func CreateItem(c echo.Context) error {
-	// request: { name, price }
+	token := extractToken(c)
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, echo.Map{"message": "missing authorization header"})
+	}
+
+	// get current user from main-service
+	me, err := fetchMe(token)
+	if err != nil {
+		return authError(c, err)
+	}
+
 	name := c.FormValue("name")
 	if name == "" {
 		return c.JSON(400, echo.Map{"message": "name is required"})
@@ -45,14 +107,26 @@ func CreateItem(c echo.Context) error {
 		return c.JSON(400, echo.Map{"message": "price is required"})
 	}
 
-	item := new(Item)
-	// if err := c.Bind(item); err != nil {
-	// 	return err
-	// }
-	item.Name = name
-	item.Price = price
-	item.ID = "I" + strconv.Itoa(len(items)+1)
-	item.OwnerID = "U1" // placeholder
-	items = append(items, *item)
-	return c.JSON(201, item)
+	item := Item{
+		ID:      "I" + strconv.Itoa(len(items)+1),
+		Name:    name,
+		Price:   price,
+		OwnerID: me.ID,
+	}
+	items = append(items, item)
+
+	// fetch users to resolve owner details
+	users, err := fetchUsers(token)
+	if err != nil {
+		return authError(c, err)
+	}
+	ownerMap := buildOwnerMap(users)
+
+	return c.JSON(201, ItemResponse{
+		ID:      item.ID,
+		Name:    item.Name,
+		Price:   item.Price,
+		OwnerID: item.OwnerID,
+		Owner:   lookupOwner(ownerMap, item.OwnerID),
+	})
 }

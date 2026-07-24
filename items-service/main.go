@@ -4,11 +4,15 @@ import (
 	"items-service/routes"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
+	// Load .env file (ignore error if not present in production)
+	_ = godotenv.Load()
+
 	e := echo.New()
 
 	// Use LoggerWithConfig for verbose, custom formatting

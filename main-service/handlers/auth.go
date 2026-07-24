@@ -64,6 +64,16 @@ func Signin(c echo.Context) error {
 
 func Me(c echo.Context) error {
 	claims := c.Get("claims").(*JWTClaims)
+	for _, user := range users {
+		if user.ID == claims.Subject {
+			return c.JSON(200, map[string]string{
+				"id":    user.ID,
+				"email": user.Email,
+				"name":  user.Name,
+			})
+		}
+	}
+	// fallback: token has valid claims but user not in store
 	return c.JSON(200, map[string]string{
 		"id":    claims.Subject,
 		"email": claims.Email,
