@@ -1,0 +1,175 @@
+basePath: /items/api/v1
+definitions:
+  handlers.CreateItemRequest:
+    properties:
+      name:
+        example: Eraser
+        type: string
+      price:
+        example: 3000
+        type: integer
+    type: object
+  handlers.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handlers.ItemResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        $ref: '#/definitions/handlers.Owner'
+      owner_id:
+        type: string
+      price:
+        type: integer
+    type: object
+  handlers.ItemsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handlers.ItemResponse'
+        type: array
+      requested_by:
+        $ref: '#/definitions/handlers.RequestedBy'
+    type: object
+  handlers.Owner:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  handlers.RequestedBy:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Items service provides CRUD operations for items. It communicates with
+    main-service via REST to authenticate and resolve user data.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Items Service API
+  version: "1.0"
+paths:
+  /items:
+    get:
+      consumes:
+      - application/json
+      description: Returns all items with owner details. Calls main-service /me and
+        /users to resolve user data.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ItemsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: List items
+      tags:
+      - items
+    post:
+      consumes:
+      - application/json
+      description: Creates a new item. Owner is derived from the authenticated user
+        via main-service /me.
+      parameters:
+      - description: Item data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.ItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Create item
+      tags:
+      - items
+  /items/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a single item with owner details
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ItemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get item by ID
+      tags:
+      - items
+securityDefinitions:
+  Bearer:
+    description: Enter your token (with or without "Bearer " prefix)
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

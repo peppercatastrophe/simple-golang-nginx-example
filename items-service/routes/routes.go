@@ -7,12 +7,9 @@ import (
 )
 
 func RegisterRoutes(e *echo.Group) {
-	// GET /api/v1/items
 	e.GET("/items", handlers.GetItems)
 
-	// GET /api/v1/items/:id
 	e.GET("/items/:id", handlers.GetItemById)
 
-	// POST /api/v1/items
 	e.POST("/items", handlers.CreateItem)
 }

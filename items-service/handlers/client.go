@@ -10,6 +10,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
 type RequestedBy struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
