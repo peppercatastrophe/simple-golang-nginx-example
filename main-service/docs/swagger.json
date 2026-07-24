@@ -15,7 +15,6 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
     "basePath": "/main/api/v1",
     "paths": {
         "/auth/signin": {

@@ -35,6 +35,6 @@ http://localhost:8080/items/swagger/index.html
 
 #### Known Issues
 
-- Using `127.0.0.1` instead of `localhost` results in CORS error
+- ~~Using `127.0.0.1` instead of `localhost` results in CORS error~~ fixed
 - `http://localhost:8080/main/swagger/` (without appending `index.html`) has redirection error
 - `http://localhost:8080/items/swagger/` (without appending `index.html`) has redirection error
