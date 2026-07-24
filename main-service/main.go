@@ -5,6 +5,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"main-service/routes"
 )
 
 func main() {
@@ -18,9 +20,9 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello from Main Service /")
 	})
-	e.GET("/api/v1", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello from Main Service /api/v1")
-	})
+	// group route /api/v1/ from routes.go
+	mainGroup := e.Group("/api/v1")
+	routes.RegisterRoutes(mainGroup)
 
 	e.Logger.Fatal(e.Start(":8081"))
 }

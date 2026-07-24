@@ -1,6 +1,7 @@
 package main
 
 import (
+	"items-service/routes"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -15,12 +16,11 @@ func main() {
 		Format: "time=${time_rfc3339} | method=${method} | uri=${uri} | status=${status} | latency=${latency_human}\n",
 	}))
 
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/healthcheck", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello from Items Service /")
 	})
-	e.GET("/api/v1/items/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello from Items Service /api/v1/items")
-	})
+	itemsGroup := e.Group("/api/v1")
+	routes.RegisterRoutes(itemsGroup)
 
 	e.Logger.Fatal(e.Start(":8082"))
 }
