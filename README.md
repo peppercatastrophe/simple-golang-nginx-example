@@ -16,7 +16,7 @@ docker compose up --build
 podman compose up --build
 ```
 
-Or using provided Makefile 
+Or using provided Makefile if using Podman
 
 ```bash
 make build
