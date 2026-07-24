@@ -44,7 +44,7 @@ func Signin(c echo.Context) error {
 
 	for _, user := range users {
 		if user.Email == email && user.Password == password {
-			token, err := GenerateToken(user.ID, user.Email, user.Name)
+			token, err := GenerateToken(user.ID, user.Email)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, map[string]string{
 					"message": "failed to generate token",
@@ -65,8 +65,7 @@ func Signin(c echo.Context) error {
 func Me(c echo.Context) error {
 	claims := c.Get("claims").(*JWTClaims)
 	return c.JSON(200, map[string]string{
-		"id":    claims.UserID,
+		"id":    claims.Subject,
 		"email": claims.Email,
-		"name":  claims.Name,
 	})
 }
