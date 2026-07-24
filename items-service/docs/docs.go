@@ -262,7 +262,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "Bearer": {
-            "description": "Enter your token (with or without \"Bearer \" prefix)",
+            "description": "Enter your token with \"Bearer \" prefix, e.g. \"Bearer eyJhbGciOiJIUzI1NiI...\"",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

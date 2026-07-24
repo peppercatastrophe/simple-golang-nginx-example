@@ -125,7 +125,7 @@ paths:
       - user
 securityDefinitions:
   Bearer:
-    description: Enter your token (with or without "Bearer " prefix)
+    description: Enter your token with "Bearer " prefix, e.g. "Bearer eyJhbGciOiJIUzI1NiI..."
     in: header
     name: Authorization
     type: apiKey
