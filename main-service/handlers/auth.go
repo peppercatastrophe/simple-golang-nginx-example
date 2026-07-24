@@ -1,6 +1,10 @@
 package handlers
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
 
 // placeholder map slice
 // [
@@ -38,15 +42,18 @@ func Signin(c echo.Context) error {
 		})
 	}
 
-	// TODO: check email and password against in memory store
-	// using placeholder users slice for now
 	for _, user := range users {
 		if user.Email == email && user.Password == password {
-			// placeholder
+			token, err := GenerateToken(user.ID, user.Email, user.Name)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, map[string]string{
+					"message": "failed to generate token",
+				})
+			}
 			return c.JSON(200, SigninResponse{
-				AccessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....",
+				AccessToken: token,
 				TokenType:   "Bearer",
-				ExpiresIn:   3600,
+				ExpiresIn:   int(getJWTExpiresMinutes().Seconds()),
 			})
 		}
 	}
@@ -56,10 +63,10 @@ func Signin(c echo.Context) error {
 }
 
 func Me(c echo.Context) error {
-	// placeholder
+	claims := c.Get("claims").(*JWTClaims)
 	return c.JSON(200, map[string]string{
-		"id":    "U1",
-		"email": "admin@example.com",
-		"name":  "Admin",
+		"id":    claims.UserID,
+		"email": claims.Email,
+		"name":  claims.Name,
 	})
 }

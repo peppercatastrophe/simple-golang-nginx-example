@@ -28,11 +28,13 @@ func RegisterRoutes(e *echo.Group) {
 	//	@Router			/auth/signin [post]
 	e.POST("/auth/signin", handlers.Signin)
 
-	// TODO: response 401 { "message": "invalid credentials" } for endpoints below
+	// Protected routes - require valid JWT
+	protected := e.Group("")
+	protected.Use(handlers.JWTMiddleware)
 
 	// GET /api/v1/me
-	e.GET("/me", handlers.Me)
+	protected.GET("/me", handlers.Me)
 
 	// GET /api/v1/users
-	e.GET("/users", handlers.Users)
+	protected.GET("/users", handlers.Users)
 }
