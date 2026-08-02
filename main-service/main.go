@@ -1,6 +1,9 @@
 package main
 
 import (
+	"embed"
+	"html/template"
+	"io"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -11,6 +14,17 @@ import (
 
 	_ "main-service/docs"
 )
+
+//go:embed templates/*
+var templateFS embed.FS
+
+type TemplateRenderer struct {
+	templates *template.Template
+}
+
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	return t.templates.ExecuteTemplate(w, name, data)
+}
 
 // @title Main Service API
 // @version 1.0
@@ -33,13 +47,16 @@ import (
 func main() {
 	e := echo.New()
 
+	tmpl := template.Must(template.ParseFS(templateFS, "templates/*.html"))
+	e.Renderer = &TemplateRenderer{templates: tmpl}
+
 	// Use LoggerWithConfig for verbose, custom formatting
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time_rfc3339} | method=${method} | uri=${uri} | status=${status} | latency=${latency_human}\n",
 	}))
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello from Main Service /")
+		return c.Render(http.StatusOK, "landing.html", nil)
 	})
 
 	e.GET("/swagger/*", echoswagger.WrapHandler)

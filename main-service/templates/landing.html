@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Go Echo Microservices Demo</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f8fafc;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --border: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --tag-bg: #dbeafe;
+    --tag-text: #1e40af;
+    --divider: #e2e8f0;
+    --endpoint-get: #059669;
+    --endpoint-post: #2563eb;
+    --endpoint-bg: #f8fafc;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a;
+      --bg-secondary: #1e293b;
+      --text: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --accent: #60a5fa;
+      --accent-hover: #93bbfd;
+      --border: #334155;
+      --code-bg: #1e293b;
+      --card-bg: #1e293b;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --tag-bg: #1e3a5f;
+      --tag-text: #93bbfd;
+      --divider: #334155;
+      --endpoint-get: #34d399;
+      --endpoint-post: #60a5fa;
+      --endpoint-bg: #1a2332;
+    }
+  }
+
+  [data-theme="light"] {
+    --bg: #ffffff;
+    --bg-secondary: #f8fafc;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --border: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --tag-bg: #dbeafe;
+    --tag-text: #1e40af;
+    --divider: #e2e8f0;
+    --endpoint-get: #059669;
+    --endpoint-post: #2563eb;
+    --endpoint-bg: #f8fafc;
+  }
+
+  [data-theme="dark"] {
+    --bg: #0f172a;
+    --bg-secondary: #1e293b;
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --accent: #60a5fa;
+    --accent-hover: #93bbfd;
+    --border: #334155;
+    --code-bg: #1e293b;
+    --card-bg: #1e293b;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --tag-bg: #1e3a5f;
+    --tag-text: #93bbfd;
+    --divider: #334155;
+    --endpoint-get: #34d399;
+    --endpoint-post: #60a5fa;
+    --endpoint-bg: #1a2332;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+
+  header h1 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  header h1 span { color: var(--accent); }
+
+  .theme-toggle {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .theme-toggle:hover { color: var(--text); border-color: var(--accent); }
+
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+  }
+  .hero h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  .section {
+    margin: 3rem 0;
+  }
+  .section h3 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section h3::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 1.2em;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+  }
+  .card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card p { color: var(--text-secondary); font-size: 0.92rem; }
+
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", monospace;
+  }
+
+  .arch-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 0.8rem;
+  }
+  .arch-box {
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+    font-weight: 600;
+    min-width: 100px;
+  }
+  .arch-box small {
+    display: block;
+    font-weight: 400;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+  .arch-arrow {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  .endpoint-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .endpoint-table th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 2px solid var(--divider);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .endpoint-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .endpoint-table tr:last-child td { border-bottom: none; }
+  .method-badge {
+    display: inline-block;
+    font-family: "SF Mono", monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #fff;
+    min-width: 40px;
+    text-align: center;
+  }
+  .method-get { background: var(--endpoint-get); }
+  .method-post { background: var(--endpoint-post); }
+  .endpoint-url {
+    font-family: "SF Mono", monospace;
+    font-size: 0.82rem;
+    background: var(--endpoint-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+
+  hr { border: none; border-top: 1px solid var(--divider); margin: 2rem 0; }
+
+  .swagger-links {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .swagger-link {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.88rem;
+    color: var(--accent);
+    font-weight: 500;
+    transition: border-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .swagger-link:hover { border-color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Go Echo <span>Microservices</span> Demo</h1>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">&#9681;</span>
+    <span id="theme-label">Auto</span>
+  </button>
+</header>
+
+<main>
+
+<section class="hero">
+  <h2>Multi-Service Architecture with Nginx &amp; Docker</h2>
+  <p>
+    A practical demonstration of how to build, route, and deploy multiple Go <strong>Echo</strong> services
+    behind an <strong>Nginx</strong> reverse proxy, all containerized with <strong>Docker Compose</strong>.
+  </p>
+</section>
+
+<hr>
+
+<section class="section">
+  <h3>Architecture Overview</h3>
+  <div class="arch-flow">
+    <div class="arch-box">Client<small>browser / curl</small></div>
+    <span class="arch-arrow">&#8594;</span>
+    <div class="arch-box">Nginx<small>:8080 reverse proxy</small></div>
+    <span class="arch-arrow">&#8594;</span>
+    <div class="arch-box">main-service<small>:8081 Echo</small></div>
+    <span class="arch-arrow">&#8594;</span>
+    <div class="arch-box">items-service<small>:8082 Echo</small></div>
+  </div>
+  <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;text-align:center;">
+    Nginx inspects the path prefix and routes <code>/main/</code> or <code>/items/</code> to the appropriate backend.
+    Each service runs in its own container with no public port exposure &mdash; only Nginx faces the outside world.
+  </p>
+</section>
+
+<hr>
+
+<section class="section">
+  <h3>Services</h3>
+  <div class="cards">
+
+    <div class="card">
+      <h4>&#128274; main-service <span class="tag">:8081</span></h4>
+      <p>Authentication and user management. Handles JWT-based sign-in, token validation middleware, and user profile lookups. Acts as the identity provider for other services.</p>
+      <p style="margin-top:0.75rem;">
+        <strong>Tech:</strong> Echo v4, golang-jwt/v5, Swagger (swaggo)
+      </p>
+    </div>
+
+    <div class="card">
+      <h4>&#128230; items-service <span class="tag">:8082</span></h4>
+      <p>CRUD operations for items. Communicates with main-service via REST to validate tokens and resolve user information. Demonstrates inter-service communication patterns.</p>
+      <p style="margin-top:0.75rem;">
+        <strong>Tech:</strong> Echo v4, godotenv, Swagger (swaggo)
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<hr>
+
+<section class="section">
+  <h3>Nginx Configuration</h3>
+  <p style="color:var(--text-secondary);margin-bottom:0.75rem;">
+    The reverse proxy does path-based routing. Nginx strips the prefix and forwards to the correct service.
+    Each service also exposes interactive Swagger API docs through the proxy.
+  </p>
+  <pre>server {
+    listen 8080;
+
+    location / {
+        proxy_pass http://main-service:8081/;
+    }
+
+    location /main/ {
+        proxy_pass http://main-service:8081/;
+        proxy_redirect /swagger/ /main/swagger/index.html;
+    }
+
+    location /items/ {
+        proxy_pass http://items-service:8082/;
+        proxy_redirect /swagger/ /items/swagger/index.html;
+    }
+}</pre>
+  <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.5rem;">
+    &#9432; Service hostnames (<code>main-service</code>, <code>items-service</code>) are resolved automatically via Docker Compose&rsquo;s internal DNS. No hardcoded IPs needed.
+  </p>
+</section>
+
+<hr>
+
+<section class="section">
+  <h3>Docker Compose</h3>
+  <p style="color:var(--text-secondary);margin-bottom:0.75rem;">
+    All three containers (Nginx + two Go services) are defined in a single compose file.
+    Each Go service uses a multi-stage <code>Dockerfile</code> to produce a tiny Alpine-based image.
+  </p>
+  <pre>services:
+  nginx:
+    image: nginx:latest
+    ports: ["8080:8080"]
+    volumes: ["./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"]
+    depends_on: [main-service, items-service]
+
+  main-service:
+    build: { context: ./main-service, target: runtime }
+    expose: ["8081"]
+
+  items-service:
+    build: { context: ./items-service, target: runtime }
+    expose: ["8082"]</pre>
+</section>
+
+<hr>
+
+<section class="section">
+  <h3>API Quick Reference</h3>
+
+  <h4 style="font-weight:600;margin-bottom:0.5rem;">Main Service &mdash; <code>/main/api/v1</code></h4>
+  <table class="endpoint-table">
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="method-badge method-post">POST</span></td>
+        <td><span class="endpoint-url">/auth/signin</span></td>
+        <td>No</td>
+        <td>Sign in with email &amp; password to receive a JWT Bearer token</td>
+      </tr>
+      <tr>
+        <td><span class="method-badge method-get">GET</span></td>
+        <td><span class="endpoint-url">/me</span></td>
+        <td>Yes</td>
+        <td>Return the authenticated user&rsquo;s profile from the JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method-badge method-get">GET</span></td>
+        <td><span class="endpoint-url">/users</span></td>
+        <td>Yes</td>
+        <td>List all registered users</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 style="font-weight:600;margin:1.5rem 0 0.5rem;">Items Service &mdash; <code>/items/api/v1</code></h4>
+  <table class="endpoint-table">
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="method-badge method-get">GET</span></td>
+        <td><span class="endpoint-url">/items</span></td>
+        <td>No</td>
+        <td>List all items</td>
+      </tr>
+      <tr>
+        <td><span class="method-badge method-get">GET</span></td>
+        <td><span class="endpoint-url">/items/:id</span></td>
+        <td>No</td>
+        <td>Get a single item by ID</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="swagger-links">
+    <a class="swagger-link" href="/main/swagger/index.html">&#128279; Main Service Swagger</a>
+    <a class="swagger-link" href="/items/swagger/index.html">&#128279; Items Service Swagger</a>
+  </div>
+</section>
+
+<hr>
+
+<section class="section">
+  <h3>Getting Started</h3>
+  <p style="color:var(--text-secondary);margin-bottom:0.75rem;">
+    Build and run the entire stack with a single command (uses Podman, see <code>Makefile</code> for Docker equivalents):
+  </p>
+  <pre>make rebuild</pre>
+  <p style="color:var(--text-secondary);margin-top:0.75rem;">
+    This builds the Go binaries inside Docker, creates the three containers, and starts everything.
+    Once running, open <strong>http://localhost:8080</strong> in your browser to see this page.
+    The services are also available directly (without Nginx) for debugging:
+  </p>
+  <pre># Main service
+curl http://localhost:8080/main/api/v1/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"admin123"}'
+
+# Items service
+curl http://localhost:8080/items/api/v1/items</pre>
+</section>
+
+</main>
+
+<footer>
+  Built with <a href="https://echo.labstack.com">Echo v4</a> &middot; Go&rsquo;s <code>html/template</code> &middot; Zero extra dependencies
+</footer>
+
+<script>
+  const html = document.documentElement;
+  const icon = document.getElementById("theme-icon");
+  const label = document.getElementById("theme-label");
+
+  const STATES = ["auto", "dark", "light"];
+  const STATE_ICONS = { auto: "\u25D1", dark: "\u263E", light: "\u2600" };
+  const STATE_LABELS = { auto: "Auto", dark: "Dark", light: "Light" };
+
+  function getStored() { return localStorage.getItem("theme") || "auto"; }
+  function setStored(v) { localStorage.setItem("theme", v); }
+
+  function applyTheme(state) {
+    if (state === "auto") {
+      html.removeAttribute("data-theme");
+    } else {
+      html.setAttribute("data-theme", state);
+    }
+    icon.innerHTML = STATE_ICONS[state];
+    label.textContent = STATE_LABELS[state];
+  }
+
+  function toggleTheme() {
+    let i = STATES.indexOf(getStored());
+    let next = STATES[(i + 1) % STATES.length];
+    setStored(next);
+    applyTheme(next);
+  }
+
+  applyTheme(getStored());
+</script>
+
+</body>
+</html>
