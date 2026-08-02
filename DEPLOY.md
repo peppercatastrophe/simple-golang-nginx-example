@@ -23,7 +23,15 @@ GitHub Actions (build)                VPS (1 CPU / 1 GB)
    sudo systemctl enable --now docker
    ```
 
-2. Add a 1 GB swap file (recommended safety margin on a 1 GB box):
+2. Make sure the user that GitHub Actions connects as can use the docker
+   socket (if it isn't `root`). Without this, deploys fail with
+   `permission denied while trying to connect to the docker API`:
+
+   ```bash
+   sudo usermod -aG docker "$USER"
+   ```
+
+3. Add a 1 GB swap file (recommended safety margin on a 1 GB box):
 
    ```bash
    sudo fallocate -l 1G /swapfile
@@ -32,7 +40,7 @@ GitHub Actions (build)                VPS (1 CPU / 1 GB)
    sudo swapon /swapfile
    ```
 
-3. Clone the repo:
+4. Clone the repo:
 
    ```bash
    sudo mkdir -p /opt/simple-golang-nginx-example
@@ -41,7 +49,7 @@ GitHub Actions (build)                VPS (1 CPU / 1 GB)
      /opt/simple-golang-nginx-example
    ```
 
-4. Create the env file (gitignored, never committed):
+5. Create the env file (gitignored, never committed):
 
    ```bash
    cd /opt/simple-golang-nginx-example
@@ -52,7 +60,7 @@ GitHub Actions (build)                VPS (1 CPU / 1 GB)
    EOF
    ```
 
-5. Test once:
+6. Test once:
 
    ```bash
    docker compose -f docker-compose.prod.yml pull
