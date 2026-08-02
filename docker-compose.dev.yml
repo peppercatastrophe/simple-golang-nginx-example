@@ -1,0 +1,16 @@
+services:
+  main-service:
+    build:
+      context: ./main-service
+      target: dev
+    volumes:
+      - ./main-service:/app
+    restart: unless-stopped
+
+  items-service:
+    build:
+      context: ./items-service
+      target: dev
+    volumes:
+      - ./items-service:/app
+    restart: unless-stopped
