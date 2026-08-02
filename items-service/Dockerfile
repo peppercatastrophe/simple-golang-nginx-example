@@ -21,3 +21,18 @@ COPY --from=builder /app/server .
 EXPOSE 8082
 
 CMD ["./server"]
+
+# Dev stage (hot reload with air) - local development only
+FROM golang:1.26-alpine AS dev
+
+WORKDIR /app
+
+RUN go install github.com/air-verse/air@latest
+
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+
+EXPOSE 8082
+
+CMD ["air", "-c", ".air.toml"]

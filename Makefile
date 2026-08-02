@@ -1,6 +1,6 @@
 IMAGE_PREFIX := simple-golang-nginx-example
 
-.PHONY: build up rebuild prune clean
+.PHONY: build up dev dev-down rebuild prune clean
 
 build:
 	podman build --target runtime -t $(IMAGE_PREFIX)-main-service ./main-service
@@ -9,6 +9,12 @@ build:
 
 up:
 	podman compose up
+
+dev:
+	podman compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+dev-down:
+	podman compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 rebuild: build up
 
